@@ -2,22 +2,23 @@ export default function createGame() {
     const state = {
         jogadores: {},
         baralho: {
-            'carta1': {nome: 'Nigiri 1', pontos: 1, cor: 'red'},
-            'carta2': {nome: 'Nigiri 2', pontos: 2, cor: 'blue'},
-            'carta3': {nome: 'Nigiri 1', pontos: 1, cor: 'red'},
-            'carta4': {nome: 'Nigiri 3', pontos: 3, cor: 'green'},
-            'carta5': {nome: 'Nigiri 1', pontos: 1, cor: 'red'},
-            'carta6': {nome: 'Nigiri 1', pontos: 1, cor: 'red'},
-            'carta7': {nome: 'Nigiri 3', pontos: 3, cor: 'green'},
-            'carta8': {nome: 'Nigiri 1', pontos: 1, cor: 'red'},
-            'carta9': {nome: 'Nigiri 3', pontos: 3, cor: 'green'},
-            'carta10': {nome: 'Nigiri 3', pontos: 3, cor: 'green'},
-            'carta11': {nome: 'Nigiri 3', pontos: 3, cor: 'green'},
-            'carta12': {nome: 'Nigiri 3', pontos: 3, cor: 'green'},
+            'carta1': {codigo: 'carta1', setor: 'NW', nome: 'nigiri1', pontos: 1},
+            'carta2': {codigo: 'carta2', setor: 'NW', nome: 'nigiri2', pontos: 2},
+            'carta3': {codigo: 'carta3', setor: 'NW', nome: 'nigiri1', pontos: 1},
+            'carta4': {codigo: 'carta4', setor: 'NW', nome: 'nigiri3', pontos: 3},
+            'carta5': {codigo: 'carta5', setor: 'NW', nome: 'nigiri1', pontos: 1},
+            'carta6': {codigo: 'carta6', setor: 'NW', nome: 'nigiri1', pontos: 1},
+            'carta7': {codigo: 'carta7', setor: 'NW', nome: 'nigiri3', pontos: 3},
+            'carta8': {codigo: 'carta8', setor: 'NW', nome: 'nigiri1', pontos: 1},
+            'carta9': {codigo: 'carta9', setor: 'NW', nome: 'nigiri3', pontos: 3},
+            'carta10': {codigo: 'carta10', setor: 'NW', nome: 'nigiri3', pontos: 3},
+            'carta11': {codigo: 'carta11', setor: 'NW', nome: 'wasabi', pontos: 3},
+            'carta12': {codigo: 'carta12', setor: 'NW', nome: 'nigiri3', pontos: 3},
         },
         rodada: 0,
         turno: 0,
         maxJogadores: 2,
+        cores: ['0xF1C40F', '0x27AE60', '0x3498DB', '0x3498DB', '0x8E44AD'],
         numJogadores: () => {
             return Object.keys(state.jogadores).length
         },
@@ -27,20 +28,23 @@ export default function createGame() {
         numCartasMao: () => {
             const idPrimeiroJogador = Object.keys(state.jogadores)[0]
             return Object.keys(state.jogadores[idPrimeiroJogador].mao).length
+        },
+        maxCartasPorRodada: () => {
+            return 4 - state.numJogadores() // O certo seria 12-numjogadores()
         }
-    }
-    function maxCartasPorRodada() {
-        return 4 - state.numJogadores()
     }
 
     function adicionarJogador(jogadorId) {
         if (state.numJogadores() < state.maxJogadores) {
             state.jogadores[jogadorId] = {
+                codigo: jogadorId,
                 mao: {},
                 mesa: {},
                 somaPontos: 0,
                 escolheu: '',
+                cor: state.cores[0]
             }
+            state.cores.shift()
             console.log("Adicionado " + jogadorId)
         } else {
             console.log("Jogo lotado. Não foi adicionado " + jogadorId)
@@ -55,7 +59,7 @@ export default function createGame() {
     function distribuirCartas() {
         // Da uma pra cada um até um máximo de 10 ou acabarem as cartas
         for (var entreguesParaCada = 1;
-            state.numCartasBaralho() >= state.numJogadores() && entreguesParaCada <= maxCartasPorRodada();
+            state.numCartasBaralho() >= state.numJogadores() && entreguesParaCada <= state.maxCartasPorRodada();
             entreguesParaCada++) {
 
             for(const jogadorId in state.jogadores) {

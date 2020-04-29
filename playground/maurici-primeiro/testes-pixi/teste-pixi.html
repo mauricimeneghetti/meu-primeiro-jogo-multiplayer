@@ -1,0 +1,375 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Meu Primeiro Jogo Multiplayer</title>
+        <link rel="shortcut icon" href="#"> <!-- Pra tirar o erro favicon 404, solução paleativa -->
+        <style>
+            body {
+                margin: 0
+            }
+            #mycanvas {
+                display: block;
+            }
+        </style>
+        <!--<script src="/socket.io/socket.io.js"></script>-->
+    </head>
+    <body>
+        <canvas id="mycanvas"></canvas>
+        <!-- Tem q botar um tipo pra ele n interpretar como sendo JS 
+        define os vertices e a posição deles no canvas(?) -->
+        <script id="vertShader" type="x-shader/x-vert">
+attribute vec2 aVertexPosition;
+attribute vec2 aTextureCoord;
+
+uniform mat3 projectionMatrix;
+
+varying vec2 vTextureCoord;
+
+void main(void) {
+    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+    vTextureCoord = aTextureCoord;
+}
+        </script>
+        <!-- colore e desenha os pixels do objeto desenhado na cena 
+        vec4 é RGBA (Red, Green, Blue, Alpha)
+        colot.r = 1.0 faz todos pixels forem desenhados tenham um tom vermelho
+        delta é um valor populado dentro do uniforms
+        if é pra só aplicar nos pixels q o alfa não é zero, ou seja, nos pixels não transparentes
+        -->
+        <script id="fragShader" type="x-shader/x-frag">
+varying vec2 vTextureCoord;
+uniform sampler2D uSampler;
+uniform float delta;
+void main(void) {
+    vec4 color = texture2D(uSampler, vTextureCoord);
+    if (color.a != 0.0) {
+        color.r = delta;
+    }
+    gl_FragColor = color;
+}
+        </script>
+
+        <script src="pixi.js"></script>
+        <script>
+        // AULA 2 USANDO O APP DO PIXI
+        //
+        // const canvas = document.getElementById('mycanvas');
+        // const app = new PIXI.Application({
+        //     view: canvas,
+        //     width: window.innerWidth,
+        //     height: window.innerHeight
+        // });
+        //document.body.appendChild(app.view);
+        // const texture = PIXI.Texture.from('sprite.png');
+        // const img = new PIXI.Sprite(texture);
+        // img.x = app.renderer.width/2;
+        // img.y = app.renderer.height/2;
+        // img.anchor.x = 0.5;
+        // img.anchor.y = 0.5;
+        // app.stage.addChild(img);
+        // app.ticker.add(animate);
+        // function animate() {
+        //     img.rotation += 0.1;
+        // }
+
+
+        // ==============================================
+
+
+        // AULA 3 APP DESTRINCHADO + RESPONSIVIDADE
+        // let _w = window.innerWidth
+        // let _h = window.innerHeight
+        // const canvas = document.getElementById('mycanvas');
+        // const renderer = new PIXI.Renderer({
+        //     view: canvas,
+        //     width: _w,
+        //     height: _h,
+        //     resolution: window.devicePixelRatio, //mult o tamanho do renderer pela resolução
+        //     autoDensity: true, //garantir que o CSS vai escalar para que encaixe com o width and height que ta setado
+        // });
+
+        // // Pra fazer responsivo
+        // window.addEventListener('resize', resize);
+        // // Minha função de resize handler
+        // function resize() {
+        //     // Atualiza as variaveis
+        //     _w = window.innerWidth;
+        //     _h = window.innerHeight;
+        //     // Chama resize do renderer com esses novos valores
+        //     renderer.resize(_w, _h); 
+        // }
+
+        // const stage = new PIXI.Container();
+
+        // const texture = PIXI.Texture.from('sprite.png');
+        // const img = new PIXI.Sprite(texture);
+        // //img.x = renderer.width/2;
+        // //img.y = renderer.height/2;
+        
+        // img.anchor.x = 0.5;
+        // img.anchor.y = 0.5;
+        // stage.addChild(img);
+
+        // const ticker = new PIXI.Ticker();
+        // ticker.add(animate);
+        // ticker.start(); 
+        // // Não precisa adicionar start pq o ticket vai começar qdo tiver um evento listener q vai ativar ele
+        // // Tem outros metodos como Stop ou Add once se quer algo q seja feito uma vez e não todo RequestAnimationFrame
+        // function animate() {
+        //     // A posição da img veio pra dentro da animação pra ser chamada constantemente e ficar responsiva
+        //     img.x = renderer.screen.width / 2;
+        //     img.y = renderer.screen.height / 2;
+
+        //     img.rotation += 0.1;
+        //     renderer.render(stage)
+        // }
+
+
+        // ==========================================================
+
+
+        // // AULA 4
+        // const canvas = document.getElementById('mycanvas');
+        // const app = new PIXI.Application({
+        //     view: canvas,
+        //     width: window.innerWidth,
+        //     height: window.innerHeight
+        // });
+
+        // // textutecache é onde salva as texturas q carregamos na app em memoria
+        // console.log(PIXI.utils.TextureCache);
+
+        // // Criaria um loader assim pra carregar os assets
+        // // let loader = new PIXI.Loader();
+        // // Mas da pra usar um loader q o pixi ja cria
+        // //let loader = new PIXI.Loader.shared;
+        // let loader = new PIXI.Loader();
+        
+        // loader.onComplete.add(handleLoadComplete);
+
+        // // Registra assets
+        // // vc pode encadear eles para q eles passem por parametro tudo
+        // loader.add("guy", "sprite.png")
+        //     .add("bg", "sprite2.png")
+        //     .on("progress", handleLoadProgress)
+        //     .on("load", handleLoadAsset)
+        //     .on("error", handleLoadError)
+        //     .load(handleLoadComplete);
+        // // mesmo que:
+        // // loader.onLoad.add(handleLoadAsset);
+        // // loader.onProgress.add(handleLoadProgress);
+        // // loader.onError.add(handleLoadError);
+
+
+        // // evento: onLoad dispara qdo cada asset individual termina de carregar
+        // // onError caso arro de errado
+        // // onProgress status de progresso do loader
+        // function handleLoadAsset(loader, resource) {
+        //     console.log("asset loaded: " + resource.name);
+        // }
+        // function handleLoadProgress(loader, resource) {
+        //     console.log(loader.progress + "% loaded");
+        // }
+        // function handleLoadError() {
+        //     console.error("load error");
+        // }
+
+        // let img; // Variavel pro sprite
+
+        // function handleLoadComplete() {
+        //     let texture = loader.resources.guy.texture;
+        //     img = new PIXI.Sprite(texture);
+        //     img.anchor.x = 0.5;
+        //     img.anchor.y = 0.5;
+        //     app.stage.addChild(img); // Adiciona a cena
+        //     // coloca a calback function (?) no ticker
+        //     app.ticker.add(animate);
+
+        //     // mudar a textura do sprite usando a propriedade texture do sprite apontando pra nova textura
+        //     setTimeout(() => {
+        //         img.texture = loader.resources.bg.texture;
+        //     }, 2000);
+        // }
+
+        // function animate() {
+        //     img.x = app.renderer.screen.width / 2;
+        //     img.y = app.renderer.screen.height / 2;
+        //     img.rotation += 0.1;
+        // }
+
+
+        // ==========================================================
+
+
+        // // AULA 5 SPRITES
+        // const canvas = document.getElementById('mycanvas');
+        // const app = new PIXI.Application({
+        //     view: canvas,
+        //     width: window.innerWidth,
+        //     height: window.innerHeight,
+        //     backgroundColor: 0x202020
+        // });
+        // //document.body.appendChild(app.view);
+        // const texture = PIXI.Texture.from('sprite2.png');
+        // const texture2 = PIXI.Texture.from('sprite.png');
+        
+        // let sprite1,
+        //     sprite2,
+        //     sprite3;
+
+        // const img = new PIXI.Sprite(texture);
+        // img.x = app.renderer.width/2;
+        // img.y = app.renderer.height/2;
+        // img.anchor.x = 0.5;
+        // img.anchor.y = 0.5;
+        
+        // //Para agrupar sprites
+        // let container = new PIXI.Container();
+        // app.stage.addChild(container);
+
+        // sprite1 = new PIXI.Sprite(texture2);
+        // sprite1.y = 100;
+        // sprite1.position.set(100, app.renderer.screen.height / 2)
+        // sprite1.anchor.set(0.5);
+        // container.addChild(sprite1);
+
+        // sprite2 = new PIXI.Sprite(texture2);
+        // sprite2.y = 100;
+        // sprite2.x = 100;
+        // container.addChild(sprite2);
+        
+        // sprite3 = new PIXI.Sprite(texture2);
+        // //sprite3.y = 100;
+        // //sprite3.x = 200;
+        // sprite3.position.set(200, 100);
+        // sprite3.anchor.set(0.5);
+        // sprite3.pivot.set(100, 100); //vai setar o anchor numa posição fixa
+        // container.addChild(sprite3);
+
+
+        // sprite4 = new PIXI.Sprite(texture2);
+        // sprite4.position.set(app.renderer.screen.width / 2, 700)
+        // sprite4.anchor.set(0.5);
+        // container.addChild(sprite4);
+
+        // app.ticker.add(animate);
+        // let delta = 0;
+        // function animate() {
+        //     delta += 0.1
+
+        //     if (sprite4.y > 230) {
+        //         sprite4.y -= 1;
+        //     }
+
+        //     //sprite1.y = 100 + Math.sin(delta) * 10;
+        //     //alpha = transparencia
+        //     //Como alpha n pode ser negativo ele fica sumindo e aparencendo
+        //     sprite1.alpha = Math.sin(delta);
+
+        //     sprite2.x = 100 + Math.sin(delta) * 10;
+        //     sprite2.tint = 0xff0000 //tintura vermelha
+
+
+        //     //container.x = Math.sin(delta) * 10;
+        //     //scale é uma propriedade q pega um ponto isso vai reescalar por 0,5 em x e y
+        //     sprite3.scale = new PIXI.Point(0.5, 0.5)
+        //     sprite3.rotation += 0.1;
+        //     sprite1.blendMode = PIXI.BLEND_MODES.MULTIPLY; // Aparentemente faz o branco virar transparente
+           
+        //     //sprite1.visible = false;
+        //     sprite1.interactive = true;
+        //     sprite1.buttonMode = true;
+
+        //     //sprite1.mask = sprite2; (?)
+
+        // }
+        // app.stage.addChild(img);
+
+
+        // ==========================================================
+
+
+        // // AULA 6 GRAPHIC API (Similar a API do Canvas)
+        // const canvas = document.getElementById('mycanvas');
+        // const app = new PIXI.Application({
+        //     view: canvas,
+        //     width: window.innerWidth,
+        //     height: window.innerHeight
+        // });
+
+        // let graphic = new PIXI.Graphics();
+        // graphic.x = app.renderer.width / 2;
+        // graphic.y = app.renderer.height / 2;
+        // app.stage.addChild(graphic)
+
+        // graphic.lineStyle(5, 0x00ff00); // linha 5, em verde
+        // graphic.beginFill(0xff0000); // preenche vermelho
+        // //graphic.drawCircle(0, 0, 100); // coord x, coord y, raio
+        // //graphic.drawRect(0, 0, 100, 200); // x, y, width, height
+        // //graphic.drawStar(0, 0, 5, 100, 40); // x, y, num pontas, raio maior, raio menor
+        // //desenhar poligono passando um array de pontos
+        // //graphic.drawPolygon([new PIXI.Point(100, 100), new PIXI.Point(100, 200), new PIXI.Point(200, 100)]);
+        // //graphic.drawShape(new PIXI.Circle(0, 0, 50));
+        // //graphic.closePath(); // faz ele voltar pra origem no fim do desenho mas usei sem e funcionou :/
+        // //graphic.moveTo(0, 0);
+        // //graphic.lineTo(100, 100);
+        // //graphic.bezierCurveTo(-200, 200, -200, 100, -100, 0); // coords do ponto de controle 1, coord do 2, ponto final
+        // //graphic.quadraticCurveTo(-200, -100, 0, -200); // coords do ponto de controle, ponto final
+        // //graphic.arc(0, 0, 50, 0, 1); // coords do centro, raio, ang inicial em rad, ang final
+        // let radius = 50;
+        // graphic.arc(0, 0, radius, 0, Math.PI * 2); // coords do centro, raio, ang inicial em rad, ang final
+        // graphic.endFill();
+
+        // app.ticker.add(animate);
+        // let delta = 0;
+        // function animate() {
+        //     delta+= 0.1;
+        //     radius = 50 + Math.sin(delta) * 25;
+
+        //     graphic.clear();
+        //     graphic.beginFill(0xff0000);
+        //     graphic.arc(0, 0, radius, 0, Math.PI * 2);
+        //     graphic.endFill();
+        // }
+
+
+        // ==========================================================
+
+
+        // // AULA 7 FILTERS
+        const canvas = document.getElementById('mycanvas');
+        const app = new PIXI.Application({
+            view: canvas,
+            width: window.innerWidth,
+            height: window.innerHeight
+        });
+        //Permite manipular pontos em 3D
+        let vertexShader = vertShader.innerHTML; //usando default q ta no repositorio: https://github.com/pixijs/pixi.js/blob/dev/packages/core/src/fragments/default.vert
+        let fragmentShader = fragShader.innerHTML;
+        let uniforms = {
+            delta: 0
+        };
+        const myFilter = new PIXI.Filter(vertexShader, fragmentShader, uniforms);
+
+        document.body.appendChild(app.view);
+        const texture = PIXI.Texture.from('sprite.png');
+        const img = new PIXI.Sprite(texture);
+        img.x = app.renderer.width/2;
+        img.y = app.renderer.height/2;
+        img.anchor.x = 0.5;
+        img.anchor.y = 0.5;
+        //PIXI tem algunss filtros já feitos aka "built in"
+        //docs/PIXI.filters.html
+        //img.filters = [new PIXI.filters.BlurFilter()];
+        img.filters = [myFilter];
+        app.stage.addChild(img);
+        app.ticker.add(animate);
+        let delta = 0;
+        function animate() {
+            delta += 0.1;
+            uniforms.delta = 0.5 + Math.sin(delta) * 0.5;
+            //img.rotation += 0.1;
+        }
+        </script>
+    </body>
+</html>
