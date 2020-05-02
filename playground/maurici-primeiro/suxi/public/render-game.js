@@ -1,12 +1,12 @@
-export default function renderGame(screen, game) {
+export default function renderGame(screen, game, jogadorAtual) {
 
     // Click listener de dados
     const state = {
         observers: [],
-        jogadorId: null
+        jogadorAtual: jogadorAtual
     }
     function registerPlayerId(jogadorId) { //pro futuro setup
-        state.jogadorId = jogadorId
+        state.jogadorAtual = jogadorId
     }
     function subscribe(observerFunction) { //Cadastra funções observadoras
         state.observers.push(observerFunction)
@@ -101,23 +101,11 @@ export default function renderGame(screen, game) {
             escalaMesa: 0.4
         }
     const graphics = new PIXI.Graphics();
-    const textoJogadores = []
-    const matrizCartas = []
+    const matrizObjetos = []
 
     function doneLoading(e) {
         console.log("Terminou load")
         createCardSheet()
-        // let img;
-        // for (let i = 0; i < 2; i++) {
-        //     img = new PIXI.Sprite(texturaCartas["nigiri1"]);
-        //     img.x = app.renderer.width/2 + 100*i;
-        //     img.y = app.renderer.height/2;
-        //     img.anchor.set(0.5);
-        //     img.interactive = true;
-        //     img.buttonMode = true;
-            
-        //     containerResize.addChild(img);
-        // }   
         app.ticker.add(animate);
         // Tem outros metodos como Stop ou Add once se quer algo q seja feito uma vez e não todo RequestAnimationFrame
 
@@ -125,24 +113,24 @@ export default function renderGame(screen, game) {
         containerResize.addChild(cabecalho)
         auxRender.y.valor += 30
         containerResize.addChild(graphics);
-        let cartasDesseJogador = []
-        for (const jogadorId in game.state.jogadores) {
-            cartasDesseJogador = []
-            cartasDesseJogador.push(jogadorId)
+        let objetosDesseJogador = []
+
+        //Desenha grid com a quantidade de jogadores do inicio do jogo
+        for (let j = 0; j < game.state.numJogadores; j++) {
+            
+            objetosDesseJogador = []
             auxRender.x.valor = auxRender.x.inicial
             auxRender.y.valor += auxRender.y.margemAntesJogador
             
-            let jogador = game.state.jogadores[jogadorId]
 
-            //Desenha nome do jogador
-            graphics.lineStyle(5, jogador.cor, 1);
-            graphics.beginFill(jogador.cor, 0.5);
-            graphics.drawRoundedRect(auxRender.x.valor, auxRender.y.valor, 600, 50, 15);
+            graphics.lineStyle(5, '0x858586', 1);
+            graphics.beginFill('0x858586', 0.5);
+            graphics.drawRoundedRect(auxRender.x.valor, auxRender.y.valor, 900, 50, 15);
             graphics.endFill();
-            let nomeJogador = new PIXI.Text('Jogador: ' + jogadorId + " | Pontos: " + jogador.somaPontos + " | Escolheu -> " + jogador.escolheu);
+            let nomeJogador = new PIXI.Text(); //'Jogador: '+cod.codigo
             nomeJogador.position.set(auxRender.x.valor + 20, auxRender.y.valor + 10);
             containerResize.addChild(nomeJogador);
-            textoJogadores.push(nomeJogador)
+            objetosDesseJogador.push(nomeJogador);
             auxRender.y.valor += 50
 
             //Desenha grid de até 10 cartas pra mão
@@ -160,7 +148,7 @@ export default function renderGame(screen, game) {
                 
                 auxRender.x.valor += auxRender.x.larguraCarta*auxRender.escalaMao + auxRender.x.margemCartasMao
             }
-            cartasDesseJogador.push(cartasMao)
+            objetosDesseJogador.push(cartasMao)
             auxRender.y.valor += auxRender.y.alturaCarta*auxRender.escalaMao + auxRender.y.margemInterna
 
             //Desenha grid de 11 cartas pra mesa
@@ -179,7 +167,7 @@ export default function renderGame(screen, game) {
                 
                 auxRender.x.valor += auxRender.x.larguraCarta*auxRender.escalaMesa+ auxRender.x.margemCartasMesa
             }
-            cartasDesseJogador.push(cartasMesa)
+            objetosDesseJogador.push(cartasMesa)
             auxRender.y.valor += auxRender.y.alturaCarta*auxRender.escalaMesa
 
             //Desenha grid de 11 textos pra mesa
@@ -198,43 +186,14 @@ export default function renderGame(screen, game) {
                 
                 auxRender.x.valor += auxRender.x.larguraCarta*auxRender.escalaMesa+ auxRender.x.margemCartasMesa
             }
-            cartasDesseJogador.push(textosMesa)
+            objetosDesseJogador.push(textosMesa)
             auxRender.y.valor += auxRender.y.margemInterna
 
-            matrizCartas.push(cartasDesseJogador)
+            matrizObjetos.push(objetosDesseJogador)
         }
-        //console.log("MATRIZ CARTAS POS LOAD")
-        //console.log(matrizCartas)
     }
     function montaMesa(cartas) {
         
-            /*
-            //let setorPudim = []
-            let setorNW = []
-            let setorRestante = [] //Depois fazer outros setores e apagar esse
-            for (const cartaId in game.state.jogadores[jogadorId].mesa) {
-                let carta = game.state.jogadores[jogadorId].mesa[cartaId]
-                if (carta.setor = "NW") {
-                    setorNW.push(carta)
-                } else {
-                    setorRestante.push(carta)
-                }
-            }
-
-            // 1. Setor Nigiri + Wasabi
-            setorNW.forEach((carta) => {
-                imgCarta = new PIXI.Sprite(texturaCartas[carta.nome]);
-                imgCarta.x = auxRender.x.valor
-                imgCarta.y = auxRender.y.valor
-                imgCarta.scale = new PIXI.Point(auxRender.escalaMesa, auxRender.escalaMesa)
-                containerResize.addChild(imgCarta);
-                cartasMesa.push(imgCarta)
-                
-                auxRender.x.valor += auxRender.x.larguraCarta*auxRender.escalaMesa+ auxRender.x.margemCartasMesa
-            });
-            auxRender.x.valor += auxRender.x.margemSetores
-            //Demais setores........
-            */
     }
 
     function createCardSheet() {
@@ -249,47 +208,46 @@ export default function renderGame(screen, game) {
         
         texturaCartas["default"] = new PIXI.Texture(sheetUrl, new PIXI.Rectangle(4*larguraCarta, 1*alturaCarta, larguraCarta, alturaCarta))
     }
-    // const basicText2 = new PIXI.Text('Basic text in pixi');
-    // basicText2.x = 50;
-    // basicText2.y = 120;
-    // app.stage.addChild(basicText2);
-    // const basicText3 = new PIXI.Text('Basic text in pixi');
-    // basicText3.x = 50;
-    // basicText3.y = 140;
-    // app.stage.addChild(basicText3);
-    // const basicText4 = new PIXI.Text('Basic text in pixi');
-    // basicText4.x = 50;
-    // basicText4.y = 160;
-    // app.stage.addChild(basicText4);
     let once = true;
     let i = 0;
     function animate() {
         auxRender.x.valor = auxRender.x.inicial
         auxRender.y.valor = auxRender.y.inicial
         //app.stage.scale = new PIXI.Point(0.3, 0.3)
-        cabecalho.text = 'SUXI GO!          | Baralho: '+game.state.numJogadores()+'             | Turno: '+game.state.rodada+"."+game.state.turno;
-        // for(const jogadorId in state.jogadores) {
-        //     let j = state.jogadores[jogadorId]
-        //     if (once): { console.log(j) }
-        //     textosJogadores
-        // }
-        i = 0
-        for(let jogadorId in game.state.jogadores) {
-            let j = game.state.jogadores[jogadorId]
-            textoJogadores[i].text = 'Jogador: ' + jogadorId + " | Pontos: " + j.somaPontos + " | Escolheu -> " + j.escolheu
-            i++
+        cabecalho.text = 'SUXI GO!          | Baralho: '+game.state.numCartasBaralho()+'             | Turno: '+game.state.rodada+"."+game.state.turno;
+
+        if (once) { console.log("JOGADORES"); console.log(game.state.jogadores) }
+
+        let nomeJogadores = []
+        for (const jogadorId in game.state.jogadores) {
+            nomeJogadores.push(jogadorId)
         }
-        //Atualiza matriz de cartas
-        if (once) { console.log(matrizCartas) }
-        matrizCartas.forEach((dadosJogador) => {
-            let nomeJogador = dadosJogador[0]
+        for (let i = nomeJogadores.length; i < game.state.numJogadores; i++) {
+            nomeJogadores.push('-')
+        }
+        if (once) { console.log('nomeJogadores'); console.log(nomeJogadores); }
+
+        matrizObjetos.forEach((dadosJogador, index) => {
+            let textoCabecalho = dadosJogador[0]
+            if (once) { console.log('textoCabecalho'); console.log(textoCabecalho); }
+            if (once) { console.log('nomeJogadores[index]'); console.log(nomeJogadores[index]); }
+            // let j = game.state.jogadores[jogadorId]
+            // 'Jogador: ' + jogadorId + " | Pontos: " + j.somaPontos + " | Escolheu -> " + j.escolheu
 
             //Atualiza mão
             let spritesMao = dadosJogador[1]
             let cartasMao = []
-            for (const cartaId in game.state.jogadores[nomeJogador].mao) {
-                cartasMao.push(game.state.jogadores[nomeJogador].mao[cartaId])
+            if (once) { console.log('index'); console.log(index); }
+            if (once) { console.log('nomeJogadores[index]'); console.log(nomeJogadores[index]); }
+            
+            if (once) { console.log('game.state.jogadores'); console.log(game.state.jogadores); }
+            if (nomeJogadores[index] != '-') {
+                if (once) { console.log('game.state.jogadores[nomeJogadores[index]].mao'); console.log(game.state.jogadores[nomeJogadores[index]].mao); }
+                for (const cartaId in game.state.jogadores[nomeJogadores[index]].mao) {
+                    cartasMao.push(game.state.jogadores[nomeJogadores[index]].mao[cartaId])
+                }
             }
+            if (once) { console.log('cartasMao'); console.log(cartasMao); }
             // Atualiza as informações das cartas nos sprites
             for (let i = 0; i < cartasMao.length; i++) {
                 spritesMao[i]['carta'] = cartasMao[i]
@@ -315,8 +273,10 @@ export default function renderGame(screen, game) {
             let spritesMesa = dadosJogador[2]
             let textosMesa = dadosJogador[3]
             let cartasMesa = []
-            for (const cartaId in game.state.jogadores[nomeJogador].mesa) {
-                cartasMesa.push(game.state.jogadores[nomeJogador].mesa[cartaId])
+            if (nomeJogadores[index] != '-') {
+                for (const cartaId in game.state.jogadores[nomeJogadores[index]].mesa) {
+                    cartasMesa.push(game.state.jogadores[nomeJogadores[index]].mesa[cartaId])
+                }
             }
             // Atualiza as informações das cartas da mesa nos sprites
             for (let i = 0; i < cartasMesa.length; i++) {

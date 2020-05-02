@@ -1,4 +1,5 @@
-export default function createGame() {    
+export default function createGame() {
+    console.log(`GAMEEEEEEEEEE`)    
     const state = {
         jogadores: {},
         baralho: {
@@ -17,9 +18,10 @@ export default function createGame() {
         },
         rodada: 0,
         turno: 0,
-        maxJogadores: 2,
+        numJogadores: 2,
+        maxJogadores: 3,
         cores: ['0xF1C40F', '0x27AE60', '0x3498DB', '0x3498DB', '0x8E44AD'],
-        numJogadores: () => {
+        contJogadores: () => {
             return Object.keys(state.jogadores).length
         },
         numCartasBaralho: () => {
@@ -30,12 +32,16 @@ export default function createGame() {
             return Object.keys(state.jogadores[idPrimeiroJogador].mao).length
         },
         maxCartasPorRodada: () => {
-            return 4 - state.numJogadores() // O certo seria 12-numjogadores()
+            return 4 - state.contJogadores() // O certo seria 12-contJogadores()
         }
     }
 
+    function setState(newState) {
+        Object.assign(state, newState)
+    }
+
     function adicionarJogador(jogadorId) {
-        if (state.numJogadores() < state.maxJogadores) {
+        if (state.contJogadores() < state.maxJogadores) {
             state.jogadores[jogadorId] = {
                 codigo: jogadorId,
                 mao: {},
@@ -46,6 +52,11 @@ export default function createGame() {
             }
             state.cores.shift()
             console.log("Adicionado " + jogadorId)
+
+            notifyAll({
+                type: 'adicionar-jogador',
+                playerId: jogadorId
+            })
         } else {
             console.log("Jogo lotado. Não foi adicionado " + jogadorId)
         }
@@ -59,7 +70,7 @@ export default function createGame() {
     function distribuirCartas() {
         // Da uma pra cada um até um máximo de 10 ou acabarem as cartas
         for (var entreguesParaCada = 1;
-            state.numCartasBaralho() >= state.numJogadores() && entreguesParaCada <= state.maxCartasPorRodada();
+            state.numCartasBaralho() >= state.contJogadores() && entreguesParaCada <= state.maxCartasPorRodada();
             entreguesParaCada++) {
 
             for(const jogadorId in state.jogadores) {
@@ -189,11 +200,13 @@ export default function createGame() {
 
     return {
         createGame,
+        setState,
         state,
         adicionarJogador,
         removerJogador,
         escolherCarta,
-        proximaRodada
+        proximaRodada,
+        subscribe
     }
 }
 
