@@ -94,7 +94,7 @@ export default function renderLobby(screen, lobby, jogadorAtual) {
 
     let once = true;
     function mudaOnce() {
-        console.log("reativou once")
+        console.log("Reativou once")
         once = true
     }
     let i = 0;
@@ -103,9 +103,6 @@ export default function renderLobby(screen, lobby, jogadorAtual) {
         auxRender.y.valor = auxRender.y.inicial
 
         cabecalho.text = 'LOBBY SUXI GO!             | Jogadores: '+lobby.state.contJogadores()+"/"+lobby.state.maxJogadores;
-
-        if (once) { console.log("JOGADORES"); console.log(lobby.state.jogadores) }
-        if (once) { console.log("lobby.state.contJogadores()"); console.log(lobby.state.contJogadores()) }
 
         let nomeJogadores = []
         let coresJogadores = []
@@ -117,13 +114,10 @@ export default function renderLobby(screen, lobby, jogadorAtual) {
             }
             coresJogadores.push(lobby.state.jogadores[jogadorId].cor)
         }
-        if (once) { console.log("nomeJogadores.length"); console.log(nomeJogadores.length) }
         for (let i = nomeJogadores.length; i < lobby.state.maxJogadores; i++) {
             nomeJogadores.push('')
             coresJogadores.push('0x858586')
         }
-        if (once) { console.log('nomeJogadores'); console.log(nomeJogadores); }
-        if (once) { console.log('coresJogadores'); console.log(coresJogadores); }
 
         matrizObjetos.forEach((dadosJogador, index) => {
             let texto = dadosJogador

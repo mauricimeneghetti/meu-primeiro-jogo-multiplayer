@@ -39,6 +39,7 @@ sockets.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         if (etapa == 'lobby') {
+            lobby.colocarTempLobby(playerId)
             lobby.removerJogadorLobby(playerId)
             console.log(`> Player disconnected FROM LOBBY: ${playerId}`)
         } else if (etapa == 'game') {
